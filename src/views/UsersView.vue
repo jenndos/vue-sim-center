@@ -1,11 +1,7 @@
-<script setup>
-
-</script>
+<script setup></script>
 
 <template>
   <h1>Пользователи</h1>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

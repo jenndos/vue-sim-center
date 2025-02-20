@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: '/study-groups',
       name: 'studyGroups',
-      component: () => import('../views/StudySessionsView.vue'),
+      component: () => import('../views/StudyGroupsView.vue'),
     },
     {
       path: '/devices',
@@ -55,7 +55,6 @@ const router = createRouter({
       component: () => import('../views/ProfileView.vue'),
     },
     // #Todo routing for non-existing pages
-
   ],
 })
 

@@ -1,10 +1,10 @@
 <script setup>
-import { ref } from 'vue';
-import IconArrowDown from '@/components/icons/IconArrowDown.vue';
+import { ref } from 'vue'
+import IconArrowDown from '@/components/icons/IconSidebarArrowDown.vue'
 
 defineProps({
-  collapsed: Boolean
-});
+  collapsed: Boolean,
+})
 
 const languages = [
   { code: 'en', label: 'English', flag: 'us' },
@@ -12,20 +12,19 @@ const languages = [
   { code: 'es', label: 'Español', flag: 'es' },
   { code: 'fr', label: 'Français', flag: 'fr' },
   { code: 'de', label: 'Deutsch', flag: 'de' },
-];
+]
 
-const selectedLanguage = ref(languages.find(lang => lang.code === 'ru'));
-const showDropdown = ref(false);
+const selectedLanguage = ref(languages.find((lang) => lang.code === 'ru'))
+const showDropdown = ref(false)
 
 const selectLanguage = (language) => {
-  selectedLanguage.value = language;
-  showDropdown.value = false;
-};
+  selectedLanguage.value = language
+  showDropdown.value = false
+}
 </script>
 
 <template>
   <div class="language-selector">
-    <!-- Dropdown Header -->
     <div class="dropdown-header" @click="showDropdown = !showDropdown">
       <div class="selected-option">
         <img
@@ -41,7 +40,6 @@ const selectLanguage = (language) => {
       </span>
     </div>
 
-    <!-- Dropdown Menu -->
     <ul v-if="showDropdown" class="dropdown-menu">
       <li v-for="language in languages" :key="language.code" @click="selectLanguage(language)">
         <img
@@ -60,7 +58,7 @@ const selectLanguage = (language) => {
 .language-selector {
   position: relative;
   width: 100%;
-  font-family: sans-serif;
+  font-family: Manrope, sans-serif;
 }
 
 .dropdown-header {
@@ -77,7 +75,10 @@ const selectLanguage = (language) => {
   transition: padding 0.3s ease;
 }
 
-/* Collapsed state styles */
+.dropdown-header .selected-option span {
+  font-weight: 800;
+}
+
 .language-selector.collapsed .dropdown-header {
   padding: 8px;
   justify-content: center;
@@ -97,7 +98,7 @@ const selectLanguage = (language) => {
 .selected-option {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .dropdown-menu {
@@ -124,7 +125,6 @@ const selectLanguage = (language) => {
   transition: background-color 0.2s;
 }
 
-/* Collapsed dropdown items */
 .language-selector.collapsed .dropdown-menu li {
   justify-content: center;
 }
@@ -140,7 +140,6 @@ img {
   border-radius: 4px;
 }
 
-/* Hide labels in collapsed state */
 .language-selector.collapsed span {
   display: none;
 }

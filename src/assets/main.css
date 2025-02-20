@@ -1,11 +1,11 @@
 @import './base.css';
 
 ul {
-    list-style: none;
+  list-style: none;
 }
 
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 
 /*#app {*/
