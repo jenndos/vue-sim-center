@@ -212,9 +212,18 @@ export default {
       if (this.currentPage < this.totalPages) this.currentPage++
     },
     formatDateTime(start, end) {
-      const startDate = new Date(start)
-      const endDate = new Date(end)
-      return `${startDate.toLocaleDateString()}, ${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`
+      const timeOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      };
+
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      return `${startDate.toLocaleDateString()}, ` +
+        `${startDate.toLocaleTimeString([], timeOptions)} - ` +
+        `${endDate.toLocaleTimeString([], timeOptions)}`;
     },
     formatStatus(status) {
       const statuses = {
