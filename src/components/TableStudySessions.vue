@@ -134,7 +134,7 @@ export default {
     sortedSessions() {
       const sorted = [...this.uniqueSessions]
       const orderFactor = this.sortOrder === 'asc' ? 1 : -1
-      const statusOrder = { completed: 1, planned: 2, canceled: 3 }
+      const statusOrder = { planned: 1, completed: 2, canceled: 3 }
       const typeOrder = { accreditation: 1, lesson: 2, examination: 3 }
       const extractNumber = (str) => {
         const match = str.match(/\d+/)
