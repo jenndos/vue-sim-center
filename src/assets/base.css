@@ -1,9 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
-:root {
-  /*--vt-c-divider-light-1: rgba(60, 60, 60, 0.29);*/
-}
-
 *,
 *::before,
 *::after {
@@ -15,7 +11,6 @@
 
 body {
   min-height: 100vh;
-  /* #TODO Change to variables */
   color: var(#000000);
   background: var(#f4f3f8);
   transition:

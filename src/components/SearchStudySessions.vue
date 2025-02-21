@@ -35,7 +35,14 @@ export default {
   },
   methods: {
     onSearch() {
-      this.$emit('search', this.searchQuery)
+      this.$emit('search', this.searchQuery.trim()) // Add trim()
+    },
+  },
+  watch: {
+    searchQuery(newVal) {
+      if (newVal === '') {
+        this.$emit('search', '') // Explicitly emit empty string
+      }
     },
   },
 }

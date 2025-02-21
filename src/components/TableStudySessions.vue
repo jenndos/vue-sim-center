@@ -3,12 +3,47 @@
     <table>
       <thead>
         <tr>
-          <th @click="sortByDateTime">Дата и время</th>
-          <th @click="sortByStatus">Статус</th>
-          <th @click="sortByModuleName">Название учебного модуля</th>
-          <th @click="sortBySessionType">Тип сессии</th>
-          <th @click="sortByRoom">Комната</th>
-          <th @click="sortByGroup">Группа</th>
+          <th @click="sortBy('datetime', 'desc')" class="th-center">
+            Дата и время
+            <span v-if="sortKey === 'datetime'" class="icon-wrapper">
+              <IconTableFilterArrow
+                class="icon-table-filter"
+                :class="{ rotated: sortOrder !== 'asc' }"
+              />
+            </span>
+          </th>
+          <th @click="sortBy('status', 'asc', 'datetime')">
+            Статус
+            <span v-if="sortKey === 'status'">▼</span>
+          </th>
+          <th @click="sortBy('module', 'asc')">
+            Название учебного модуля
+            <span v-if="sortKey === 'module'">
+              <span v-if="sortOrder === 'asc'">▲</span>
+              <span v-else>▼</span>
+            </span>
+          </th>
+          <th @click="sortBy('type', 'asc', 'datetime')">
+            Тип сессии
+            <span v-if="sortKey === 'type'">
+              <span v-if="sortOrder === 'asc'">▼</span>
+              <span v-else>▼</span>
+            </span>
+          </th>
+          <th @click="sortBy('room', 'asc')">
+            Комната
+            <span v-if="sortKey === 'room'">
+              <span v-if="sortOrder === 'asc'">▲</span>
+              <span v-else>▼</span>
+            </span>
+          </th>
+          <th @click="sortBy('group', 'asc')">
+            Группа
+            <span v-if="sortKey === 'group'">
+              <span v-if="sortOrder === 'asc'">▲</span>
+              <span v-else>▼</span>
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -25,8 +60,18 @@
               {{ formatSessionName(session.type.name) }}
             </span>
           </td>
-          <td>{{ session.rooms.map((room) => room.id).join(', ') }}</td>
-          <td>{{ session.groups.map((group) => group.name).join(', ') }}</td>
+          <td>
+            {{
+              session.rooms
+                .map((room) => room.id)
+                .sort((a, b) => a - b)
+                .map((id) => `Комната ${id}`)
+                .join(', ')
+            }}
+          </td>
+          <td>
+            {{ session.groups.map((group) => group.name).join(', ') }}
+          </td>
         </tr>
       </tbody>
       <tfoot class="table-foot">
@@ -57,9 +102,10 @@
 
 <script>
 import IconPaginationArrowLeft from '@/components/icons/IconPaginationArrowLeft.vue'
+import IconTableFilterArrow from '@/components/icons/IconTableFilterArrow.vue'
 
 export default {
-  components: { IconPaginationArrowLeft },
+  components: { IconTableFilterArrow, IconPaginationArrowLeft },
   props: {
     sessions: {
       type: Array,
@@ -75,68 +121,89 @@ export default {
     }
   },
   computed: {
+    // Remove duplicate sessions based on their id.
+    uniqueSessions() {
+      const map = new Map()
+      this.sessions.forEach((session) => {
+        if (!map.has(session.id)) {
+          map.set(session.id, session)
+        }
+      })
+      return Array.from(map.values())
+    },
     sortedSessions() {
-      let sorted = [...this.sessions]
-
-      switch (this.sortKey) {
-        case 'datetime':
-          sorted.sort((a, b) => {
-            return this.sortOrder === 'asc'
-              ? new Date(a.start) - new Date(b.start)
-              : new Date(b.start) - new Date(a.start)
-          })
-          break
-        case 'status':
-          sorted.sort((a, b) => a.status.name.localeCompare(b.status.name))
-          break
-        case 'module':
-          sorted.sort((a, b) => a.module.localeCompare(b.module))
-          break
-        case 'type':
-          sorted.sort((a, b) => a.type.name.localeCompare(b.type.name))
-          break
-        case 'room':
-          sorted.sort(
-            (a, b) =>
-              Math.min(...a.rooms.map((room) => room.id)) -
-              Math.min(...b.rooms.map((room) => room.id)),
-          )
-          break
-        case 'group':
-          sorted.sort((a, b) => a.groups[0].name.localeCompare(b.groups[0].name))
-          break
+      const sorted = [...this.uniqueSessions]
+      const orderFactor = this.sortOrder === 'asc' ? 1 : -1
+      const statusOrder = { completed: 1, planned: 2, canceled: 3 }
+      const typeOrder = { accreditation: 1, lesson: 2, examination: 3 }
+      const extractNumber = (str) => {
+        const match = str.match(/\d+/)
+        return match ? parseInt(match[0], 10) : Infinity
       }
 
+      sorted.sort((a, b) => {
+        let result = 0
+        switch (this.sortKey) {
+          case 'datetime': {
+            const aDate = new Date(a.start)
+            const bDate = new Date(b.start)
+            result = aDate - bDate
+            break
+          }
+          case 'status': {
+            const aVal = statusOrder[a.status.name] || 99
+            const bVal = statusOrder[b.status.name] || 99
+            result = aVal - bVal
+            break
+          }
+          case 'module': {
+            result = a.module.localeCompare(b.module)
+            break
+          }
+          case 'type': {
+            const aVal = typeOrder[a.type.name] || 99
+            const bVal = typeOrder[b.type.name] || 99
+            result = aVal - bVal
+            break
+          }
+          case 'room': {
+            const aMin = Math.min(...a.rooms.map((room) => room.id))
+            const bMin = Math.min(...b.rooms.map((room) => room.id))
+            result = aMin - bMin
+            break
+          }
+          case 'group': {
+            const aMin = Math.min(...a.groups.map((g) => extractNumber(g.name)))
+            const bMin = Math.min(...b.groups.map((g) => extractNumber(g.name)))
+            result = aMin - bMin
+            break
+          }
+        }
+        return result * orderFactor
+      })
       return sorted
     },
     paginatedSessions() {
       const start = (this.currentPage - 1) * this.itemsPerPage
-      const end = start + this.itemsPerPage
-      return this.sortedSessions.slice(start, end)
+      return this.sortedSessions.slice(start, start + this.itemsPerPage)
     },
     totalPages() {
       return Math.ceil(this.sortedSessions.length / this.itemsPerPage)
     },
   },
   methods: {
-    sortByDateTime() {
-      this.sortKey = 'datetime'
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
-    },
-    sortByStatus() {
-      this.sortKey = 'status'
-    },
-    sortByModuleName() {
-      this.sortKey = 'module'
-    },
-    sortBySessionType() {
-      this.sortKey = 'type'
-    },
-    sortByRoom() {
-      this.sortKey = 'room'
-    },
-    sortByGroup() {
-      this.sortKey = 'group'
+    sortBy(key, defaultOrder, resetKey) {
+      if (this.sortKey === key) {
+        if (resetKey) {
+          this.sortKey = resetKey
+          this.sortOrder = 'desc'
+        } else {
+          this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+        }
+      } else {
+        this.sortKey = key
+        this.sortOrder = defaultOrder
+      }
     },
     prevPage() {
       if (this.currentPage > 1) this.currentPage--
@@ -150,16 +217,12 @@ export default {
       return `${startDate.toLocaleDateString()}, ${startDate.toLocaleTimeString()} - ${endDate.toLocaleTimeString()}`
     },
     formatStatus(status) {
-      switch (status) {
-        case 'planned':
-          return 'Запланировано'
-        case 'canceled':
-          return 'Отменено'
-        case 'completed':
-          return 'Завершено'
-        default:
-          return status
+      const statuses = {
+        planned: 'Запланировано',
+        canceled: 'Отменено',
+        completed: 'Завершено',
       }
+      return statuses[status] || status
     },
     getStatusClass(status) {
       return {
@@ -170,16 +233,12 @@ export default {
       }
     },
     formatSessionName(sessionName) {
-      switch (sessionName) {
-        case 'accreditation':
-          return 'Аккредитация'
-        case 'lesson':
-          return 'Урок'
-        case 'examination':
-          return 'Экзамен'
-        default:
-          return sessionName
+      const names = {
+        accreditation: 'Аккредитация',
+        lesson: 'Урок',
+        examination: 'Экзамен',
       }
+      return names[sessionName] || sessionName
     },
     getSessionName(sessionName) {
       return {
@@ -189,6 +248,19 @@ export default {
         'session-examination': sessionName === 'examination',
       }
     },
+    resetPage() {
+      this.currentPage = 1
+    },
+  },
+  watch: {
+    sessions: {
+      handler() {
+        this.resetPage()
+      },
+      immediate: true,
+    },
+    sortKey: 'resetPage',
+    sortOrder: 'resetPage',
   },
 }
 </script>
@@ -199,22 +271,18 @@ export default {
   margin: 20px auto;
   font-family: 'Manrope', sans-serif;
 }
-
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   border-width: 1px;
-  /*margin-bottom: 10px;*/
   border-radius: 12px;
   overflow: hidden;
   border-color: #e9eaec;
 }
-
 tbody tr:nth-child(even) {
   background-color: rgba(244, 244, 244, 1);
 }
-
 th {
   background-color: #f2f2f2;
   cursor: pointer;
@@ -223,29 +291,24 @@ th {
   border: 1px solid #ddd;
   padding: 8px;
 }
-
 th:first-child,
 td:first-child {
   white-space: nowrap;
 }
-
 td {
   border: 1px solid #ddd;
   padding: 10px 16px;
 }
-
 .table-foot {
   background-color: #f5f7f9;
   border-radius: 0 0 12px 12px;
 }
-
 .pagination {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
 }
-
 .pagination button {
   display: flex;
   justify-content: center;
@@ -258,23 +321,19 @@ td {
   background-color: #ffffff;
   border-radius: 8px;
 }
-
 .pagination button.active {
   box-shadow: inset 0 0 0 1px rgba(55, 97, 243, 1);
   padding: 10px;
   color: rgba(55, 97, 243, 1);
   background-color: white;
 }
-
 .pagination button:hover {
   background-color: rgba(224, 224, 224, 1);
 }
-
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
 .status-cell {
   display: inline-block;
   padding: 4px 12px;
@@ -282,24 +341,32 @@ button:disabled {
   text-align: center;
   vertical-align: middle;
 }
-
 .status-planned {
   background-color: rgba(175, 191, 245, 1);
 }
-
 .status-canceled {
   background-color: #ffabab;
 }
-
 .status-completed {
   background-color: rgba(145, 200, 147, 1);
 }
-
 .rotated {
   transform: rotate(180deg);
 }
-
 .icon-pagination-arrow {
   color: rgba(153, 153, 153, 1);
+}
+.icon-table-filter {
+  margin-left: 18px;
+}
+.th-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+.icon-wrapper {
+  display: inline-flex;
+  align-items: center;
 }
 </style>

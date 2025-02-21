@@ -29,6 +29,7 @@ const links = [
 
 const user = {
   fullName: 'Барнаби Мармадюк',
+  role: 'Преподаватель'
 }
 
 const userInitials = computed(() => {
@@ -49,10 +50,10 @@ const toggleSidebar = () => {
       <IconArrowLeft :class="{ rotated: isCollapsed }" style="color: white" />
     </button>
 
-    <div class="logo-container">
+    <RouterLink :to="'/'" class="logo-container">
       <IconLogo class="logo" />
       <span class="label" v-if="!isCollapsed">Сим Центр</span>
-    </div>
+    </RouterLink>
     <nav>
       <ul>
         <li v-for="link in links" :key="link.to">
@@ -67,8 +68,8 @@ const toggleSidebar = () => {
     <div class="user-menu-wrapper">
       <RouterLink :to="'/profile'" class="profile" active-class="active-link">
         <div class="profile-header" v-if="!isCollapsed">
-          <h4>Барнаби Мармадюк</h4>
-          <p>Преподаватель</p>
+          <h4>{{ user.fullName }}</h4>
+          <p>{{ user.role }}</p>
         </div>
         <div class="profile-logo">
           {{ userInitials }}
@@ -93,7 +94,6 @@ const toggleSidebar = () => {
   height: 100vh;
   position: relative;
   padding: 19px 12px;
-  /*!*#TODO Change width to variable*!*/
   background-color: #ffffff;
   min-width: 274px;
   transition: all 0.3s ease;
@@ -109,6 +109,10 @@ const toggleSidebar = () => {
   align-items: center;
   justify-content: center;
   margin: 19px auto 43px;
+}
+
+.logo-container span {
+  color: #000000;
 }
 
 .logo {
@@ -215,7 +219,6 @@ footer small {
 }
 
 .icon-toggle {
-  /*#TODO Make with variables*/
   position: absolute;
   top: 50px;
   right: -12px;
@@ -236,10 +239,9 @@ footer small {
 /* Collapsed  */
 
 .sidebar.collapsed {
-  min-width: 74px; /* Collapsed width */
+  min-width: 74px;
 }
 
-/* Hide elements when collapsed */
 .collapsed .label,
 .collapsed .nav-link span,
 .collapsed .profile-header,
@@ -247,36 +249,30 @@ footer small {
   display: none;
 }
 
-/* Adjust logo position when collapsed */
 .collapsed .logo-container {
   justify-content: center;
   margin: 19px auto;
 }
 
-/* Center icons in collapsed state */
 .collapsed .nav-link {
   justify-content: center;
   padding: 12px 0;
 }
 
-/* Adjust profile section */
 .collapsed .profile {
   justify-content: center;
   padding: 0;
 }
 
-/* Rotate toggle icon */
 .icon-toggle .rotated {
   transform: rotate(180deg);
 }
 
-/* Language selector adjustments */
 .collapsed .language-selector {
   display: flex;
   justify-content: center;
 }
 
-/* Logout button adjustments */
 .collapsed .btn-logout {
   justify-content: center;
 }
@@ -285,27 +281,22 @@ footer small {
   margin: 0 !important;
 }
 
-/* Specific adjustments for navigation icons */
 .collapsed .nav-link .icon {
   margin-right: 0;
 }
 
-/* Adjust logo margins */
 .collapsed .logo {
   margin-right: 0;
 }
 
-/* Language selector flags */
 .collapsed .language-selector img {
   margin: 0;
 }
 
-/* Logout button icon */
 .collapsed .btn-logout .icon {
   margin-right: 0;
 }
 
-/* Toggle button icon */
 .collapsed .icon-toggle svg {
   margin: 0;
 }

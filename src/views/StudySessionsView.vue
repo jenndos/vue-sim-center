@@ -7,7 +7,12 @@
         <ButtonCreateStudySessions />
       </div>
     </div>
-    <TableStudySessions :sessions="filteredSessions" class="table-study-sessions" />
+    <TableStudySessions
+      ref="tableComponent"
+      :sessions="filteredSessions"
+      :key="searchQuery"
+      class="table-study-sessions"
+    />
   </div>
 </template>
 
@@ -31,9 +36,12 @@ export default {
   },
   computed: {
     filteredSessions() {
-      if (!this.searchQuery) return this.sessions
+      const searchTerms = this.searchQuery
+        .toLowerCase()
+        .split(' ')
+        .filter((term) => term.trim() !== '')
 
-      const searchTerms = this.searchQuery.toLowerCase().split(' ')
+      if (searchTerms.length === 0) return this.sessions
 
       return this.sessions.filter((session) =>
         searchTerms.every((term) => session.module.toLowerCase().includes(term)),
